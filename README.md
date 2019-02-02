@@ -37,7 +37,7 @@ Because we created with RBAC we have to create a k8s service account in the kube
 
 Run 
 ```
-kubectl apply -f tiller-rbac-role.yml
+kubectl apply -f tiller-rbac-role.yaml
 ```
 validate that it was created
 
@@ -58,15 +58,15 @@ Deploy mongoDB:
 helm install stable/mongodb --name orders-mongo --set mongodbUsername=orders-user,mongodbPassword=orders-password,mongodbDatabase=akschallenge
 
 ```
-Deploy captureorder.yml
+Deploy captureorder.yaml
 
 ```
-kubectl apply -f captureorder.yml
+kubectl apply -f captureorder.yaml
 ```
 
 Expose capture order service:
 ```
-kubectl apply -f captureorder-service.yml
+kubectl apply -f captureorder-service.yaml
 ```
 
 Wait for loadblancer to create and get IP.
@@ -75,11 +75,43 @@ Set variable to IP:
 ```
 export CAPTUREORDERSERVICEIP=$(kubectl get service captureorder -o jsonpath="{.status.loadBalancer.ingress[*].ip}")
 ```
-Update frontend-deployment.yml to use your _the value of_ *CAPTUREORDERSERVICEIP* 
+Update frontend-deployment.yaml to use your _the value of_ *CAPTUREORDERSERVICEIP* 
 Then deploy frontend and expose it:
 
 ```
-kubectl apply -f frontend-deployment.yml
-kubectl apply -f frontend-service.yml
+kubectl apply -f frontend-deployment.yaml
+kubectl apply -f frontend-service.yaml
 ```
 
+2.6 Scaling
+
+Create load test container 
+
+```
+az container create -g akschallenge -n loadtest --image azch/loadtest --restart-policy Never -e SERVICE_IP=<public ip of order capture service>
+```
+
+
+
+
+2.7
+
+Create a registry, this 
+
+
+Get the capture order source:
+```
+git clone https://github.com/Azure/azch-captureorder.git
+cd azch-captureorder
+```
+
+Use ACR build to build image: 
+
+NOTE:   We will probably need to do some coaching here on expectation.  This is really just showing them that they can build and push docker images with ACR.
+
+It may be confusing if we follow that up with having them build the image in AzDevops possibly, clarification may be necessary
+
+```
+az acr build -t "captureorder:{{.Run.ID}}" -r <unique-acr-name> .
+
+```
