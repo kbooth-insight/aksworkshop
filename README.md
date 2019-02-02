@@ -13,7 +13,7 @@ az resource create \
     --properties '{"Application_Type":"web"}' 
 ```
 
-Create an SP to use for the walkthrough (this should be provided to you by Spektra)
+If you don't have the spektra SP and are using your own subscription, create an SP and keep it around
 
 `az ad sp create-for-rbac --name booth-for-akschallenge`
 
@@ -50,7 +50,7 @@ Because we created with RBAC we have to create a k8s service account in the kube
 
 Run 
 ```
-kubectl apply -f tiller-rbac-role.yaml
+kubectl apply -f yaml/tiller-rbac-role.yaml
 ```
 validate that it was created
 
@@ -71,10 +71,10 @@ Deploy mongoDB:
 helm install stable/mongodb --name orders-mongo --set mongodbUsername=orders-user,mongodbPassword=orders-password,mongodbDatabase=akschallenge
 
 ```
-Deploy captureorder.yaml
+Deploy captureorder-deployment.yaml
 
 ```
-kubectl apply -f captureorder.yaml
+kubectl apply -f captureorder-deployment.yaml
 ```
 
 Expose capture order service:
@@ -95,8 +95,12 @@ Then deploy frontend and expose it:
 kubectl apply -f frontend-deployment.yaml
 kubectl apply -f frontend-service.yaml
 ```
+## 2.5 Monitoring
+Navigate to the AKS instance in the portal and look at the monitoring section on the left nav.
 
-2.6 Scaling
+My concern here is that if they only have a service principal, they can't navigate the portal?  Do these spektra accounts include a login to the portal as well?
+
+## 2.6 Scaling
 
 Create load test container in ACI
 
@@ -105,7 +109,7 @@ az container create -g akschallenge -n loadtest --image azch/loadtest --restart-
 ```
 
 
-2.7
+## 2.7
 
 Create a registry, this 
 
@@ -118,14 +122,19 @@ cd azch-captureorder
 
 Use ACR build to build image: 
 
-NOTE:   We will probably need to do some coaching here on expectation.  This is really just showing them that they can build and push docker images with ACR.
-
 It may be confusing if we follow that up with having them build the image in AzDevops possibly, clarification may be necessary
 
 ```
 az acr build -t "captureorder:{{.Run.ID}}" -r <unique-acr-name> .
 
 ```
+
+Then build the frontend image too (go into the front ned repo):
+```
+az acr build -t "frontend:{{.Run.ID}}" -r <unique-acr-name> .
+
+```
+
 
 Grant the service princpal given to you by spektra permission to pull from the registry. 
 
@@ -145,3 +154,29 @@ ACR_ID=$(az acr show --name $ACR_NAME --resource-group $ACR_RESOURCE_GROUP --que
 az role assignment create --assignee $CLIENT_ID --role acrpull --scope $ACR_ID
 ```
 
+Now we have to create the k8s secret to login to our ACR.  In the future, we can use MSIs rather than need this secret..maybe?  Creating this secret is necessary for any private registry.  It isn't an AKS specific thing.
+
+```
+kubectl create secret docker-registry acr-auth --docker-server <acr-login-server> --docker-username <service-principal-ID> --docker-password <service-principal-password> --docker-email <email-address>
+```
+
+We need to update the spec of the deployment to use the k8s secret we just created.
+
+Go into each *-deployment.yaml and add this underneath `spec:`
+
+i.e.
+
+```
+spec:
+  imagePullSecrets:
+  - name: acr-auth
+  containers:
+  - name: captureorder
+    image: boothaksworkshop.azurecr.io/captureorder:ch1
+```
+
+## Bonus Points?
+
+* moving app insights key, mongodb username/password to reference k8s secrets in the manifest
+* not using external IP of capture order service from frontend
+* using terraform to create stuff

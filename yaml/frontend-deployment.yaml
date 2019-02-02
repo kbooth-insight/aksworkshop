@@ -12,11 +12,11 @@ spec:
         labels:
             app: frontend
       spec:
-        # imagePullSecrets:
-        # - name: acr-auth
+        imagePullSecrets:
+        - name: acr-auth
         containers:
         - name: frontend
-          image: azch/frontend
+          image: boothaksworkshop.azurecr.io/frontend:ch2
           imagePullPolicy: Always
           readinessProbe:
             httpGet:
