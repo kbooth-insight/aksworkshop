@@ -1,5 +1,18 @@
 # Walkthrough with RBAC
 
+Keep your service principal ID/secret handy.
+
+Create analytics workspace and keep the key around to give to everyone as they get their captureorder services up:
+
+```
+az resource create \
+    --resource-group akschallenge \
+    --resource-type "Microsoft.Insights/components" \
+    --name akschallengeproctor \
+    --location eastus \
+    --properties '{"Application_Type":"web"}' 
+```
+
 Create an SP to use for the walkthrough (this should be provided to you by Spektra)
 
 `az ad sp create-for-rbac --name booth-for-akschallenge`
@@ -20,7 +33,7 @@ use the same credentials to create AKS cluster with RBAC:
 az aks create --resource-group akschallenge --name <unique-aks-cluster-name> --enable-addons monitoring --kubernetes-version 1.11.5 --generate-ssh-keys --location eastus --service-principal APP_ID --client-secret "APP_SECRET"
 ```
 
-Wait.
+Wait for awhile.
 
 If you hit the dashboard now, you will get a lot of permissions errors. 
 
@@ -85,13 +98,11 @@ kubectl apply -f frontend-service.yaml
 
 2.6 Scaling
 
-Create load test container 
+Create load test container in ACI
 
 ```
 az container create -g akschallenge -n loadtest --image azch/loadtest --restart-policy Never -e SERVICE_IP=<public ip of order capture service>
 ```
-
-
 
 
 2.7
@@ -115,3 +126,22 @@ It may be confusing if we follow that up with having them build the image in AzD
 az acr build -t "captureorder:{{.Run.ID}}" -r <unique-acr-name> .
 
 ```
+
+Grant the service princpal given to you by spektra permission to pull from the registry. 
+
+```
+AKS_RESOURCE_GROUP=rg-booth-akschallenge
+AKS_CLUSTER_NAME=booth-akschallenge
+ACR_RESOURCE_GROUP=$AKS_RESOURCE_GROUP
+ACR_NAME=boothaksworkshop
+
+# Get the id of the service principal configured for AKS
+CLIENT_ID=$(az aks show --resource-group $AKS_RESOURCE_GROUP --name $AKS_CLUSTER_NAME --query "servicePrincipalProfile.clientId" --output tsv)
+
+# Get the ACR registry resource id
+ACR_ID=$(az acr show --name $ACR_NAME --resource-group $ACR_RESOURCE_GROUP --query "id" --output tsv)
+
+# Create role assignment
+az role assignment create --assignee $CLIENT_ID --role acrpull --scope $ACR_ID
+```
+

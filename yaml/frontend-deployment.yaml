@@ -12,6 +12,8 @@ spec:
         labels:
             app: frontend
       spec:
+        # imagePullSecrets:
+        # - name: acr-auth
         containers:
         - name: frontend
           image: azch/frontend
