@@ -175,6 +175,28 @@ spec:
     image: boothaksworkshop.azurecr.io/captureorder:ch1
 ```
 
+## 4.1
+
+Create a new AKS cluster with custom vnet
+
+```
+az network vnet create \
+    --resource-group akschallenge \
+    --name myVnet \
+    --address-prefixes 10.0.0.0/8 \
+    --subnet-name myAKSSubnet \
+    --subnet-prefix 10.240.0.0/16
+```
+
+```
+az network vnet subnet create \
+    --resource-group akschallenge \
+    --vnet-name myVnet \
+    --name myVirtualNodeSubnet \
+    --address-prefix 10.241.0.0/16
+```
+
+
 ## Bonus Points?
 
 * moving app insights key, mongodb username/password to reference k8s secrets in the manifest

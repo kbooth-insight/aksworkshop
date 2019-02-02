@@ -6,17 +6,15 @@ spec:
   selector:
       matchLabels:
         app: captureorder
-  replicas: 2
+  replicas: 1
   template:
       metadata:
         labels:
             app: captureorder
       spec:
-        # imagePullSecrets:
-        # - name: acr-auth
         containers:
         - name: captureorder
-          image:  boothaksworkshop.azurecr.io/captureorder:##BUILD_ID##
+          image: azch/captureorder
           imagePullPolicy: Always
           readinessProbe:
             httpGet:
@@ -26,18 +24,9 @@ spec:
             httpGet:
               port: 8080
               path: /healthz
-          resources:
-            requests:
-              memory: "128Mi"
-              cpu: "100m"
-            limits:
-              memory: "256Mi"
-              cpu: "500m"
           env:
           - name: TEAMNAME
             value: "team-azch"
-          - name: CHALLENGEAPPINSIGHTS_KEY
-            value: ""
           - name: MONGOHOST
             value: "orders-mongo-mongodb.default.svc.cluster.local"
           - name: MONGOUSER
@@ -46,3 +35,12 @@ spec:
             value: "orders-password"
           ports:
           - containerPort: 80
+        nodeSelector:
+          kubernetes.io/role: agent
+          beta.kubernetes.io/os: linux
+          type: virtual-kubelet
+        tolerations:
+        - key: virtual-kubelet.io/provider
+          operator: Exists
+        - key: azure
+          effect: NoSchedule 

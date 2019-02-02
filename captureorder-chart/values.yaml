@@ -12,6 +12,8 @@ image:
 nameOverride: ""
 fullnameOverride: ""
 
+buildNumber: "blah"
+
 service:
   type: ClusterIP
   port: 80
