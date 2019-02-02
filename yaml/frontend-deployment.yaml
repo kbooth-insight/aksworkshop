@@ -33,6 +33,6 @@ spec:
               cpu: "500m"
           env:
           - name: CAPTUREORDERSERVICEIP
-            value: "104.209.255.22"
+            value: "captureorder.default.svc.cluster.local"
           ports:
           - containerPort: 80
