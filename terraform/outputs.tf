@@ -9,3 +9,7 @@ output "secondary_primary_shared_key" {
 output "aks_fqdn" {
   value = "${azurerm_kubernetes_cluster.aks_cluster.fqdn}"
 }
+
+output "aks_host" {
+  value = "${azurerm_kubernetes_cluster.aks_cluster.kube_config.0.host}"
+}

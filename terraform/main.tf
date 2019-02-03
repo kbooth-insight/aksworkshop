@@ -6,10 +6,6 @@ provider "null" {
   version = "~>2.0"
 }
 
-provider "helm" {
-  version = "~> 0.7"
-}
-
 provider "random" {
   version = "2.0"
 }
@@ -63,32 +59,35 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     network_plugin = "azure"
   }
 
-  #   linux_profile {
-  #     admin_username = "${var.admin_username}"
-
-  #   }
   addon_profile {
     aci_connector_linux {
       enabled     = true
       subnet_name = "${azurerm_subnet.aci_subnet.name}"
     }
+
+
   }
+
   role_based_access_control {
     enabled = true
   }
+
   agent_pool_profile {
     name           = "linuxprofile"
     count          = "2"
     os_type        = "Linux"
     vm_size        = "Standard_D2s_v3"
     vnet_subnet_id = "${azurerm_subnet.aks_subnet.id}"
+
   }
+
   service_principal {
     client_id     = "${var.client_id}"
     client_secret = "${var.client_secret}"
   }
+
   tags {
-    test = "blah"
+    test = "blah2"
   }
 }
 
@@ -102,7 +101,7 @@ resource "null_resource" "setup_k8s" {
   }
 
   provisioner "local-exec" {
-    command = "kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard"
+    command = "kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard || true"
   }
 
   provisioner "local-exec" {
@@ -110,10 +109,14 @@ resource "null_resource" "setup_k8s" {
   }
 
   provisioner "local-exec" {
-    command = "helm install stable/mongodb --name orders-mongo --set mongodbUsername=orders-user,mongodbPassword=orders-password,mongodbDatabase=akschallenge --wait"
+    command = "helm upgrade --install --force --set mongodbUsername=orders-user,mongodbPassword=orders-password,mongodbDatabase=akschallenge --wait orders-mongo stable/mongodb"
   }
 
   provisioner "local-exec" {
-    command = "helm install ../provided-helm --set appInsightsKey=${azurerm_log_analytics_workspace.log_workspace.primary_shared_key}"
+    command = "helm upgrade --install --force --set appInsightsKey=${azurerm_log_analytics_workspace.log_workspace.primary_shared_key} --wait captureorders ../provided-helm"
   }
+
+  # provisioner "local-exec" {
+  #   command = "az aks browse -g ${azurerm_resource_group.workshop_group.name} -n ${azurerm_kubernetes_cluster.aks_cluster.name} &"
+  # }
 }
