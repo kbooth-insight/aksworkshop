@@ -81,47 +81,30 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     client_id     = "${var.client_id}"
     client_secret = "${var.client_secret}"
   }
-
   tags {
     test = "blah"
   }
 }
 
-resource "null_resource" "get_aks_creds" {
+resource "null_resource" "setup_k8s" {
   provisioner "local-exec" {
-    command = "az aks get-credentials -g ${azurerm_resource_group.workshop_group.name} -n ${azurerm_kubernetes_cluster.aks_cluster.name}"
+    command = "az aks get-credentials --admin --overwrite-existing -g ${azurerm_resource_group.workshop_group.name} -n ${azurerm_kubernetes_cluster.aks_cluster.name}"
   }
 
   provisioner "local-exec" {
     command = "kubectl apply -f ../yaml/tiller-rbac-role.yaml"
   }
 
-    provisioner "local-exec" {
-    command = "helm init --service-account tiller"
-  }
-}
-
-resource "helm_release" "mongo" {
-  name  = "orders-mongo"
-  chart = "stable/mongodb"
-
-  set {
-    name  = "mongodbUsername"
-    value = "orders-user"
+  provisioner "local-exec" {
+    command = "kubectl create clusterrolebinding kubernetes-dashboard --clusterrole=cluster-admin --serviceaccount=kube-system:kubernetes-dashboard"
   }
 
-  set {
-    name  = "mongodbPassword"
-    value = "orders-password"
+  provisioner "local-exec" {
+    command = "helm init --service-account tiller --wait"
   }
 
-  set {
-    name  = "mongodbDatabase"
-    value = "akschallenge"
+  provisioner "local-exec" {
+    command = "helm install stable/mongodb --name orders-mongo --set mongodbUsername=orders-user,mongodbPassword=orders-password,mongodbDatabase=akschallenge"
   }
 
-  set {
-    name  = "placeholder"
-    value = "${azurerm_kubernetes_cluster.aks_cluster.name}"
-  }
 }
