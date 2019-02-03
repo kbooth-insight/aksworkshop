@@ -14,17 +14,15 @@ provider "random" {
   version = "2.0"
 }
 
-data "azurerm_client_config" "current" {}
-
 resource "azurerm_resource_group" "workshop_group" {
-  name     = "rg-booth-aksworkshop"
+  name     = "rg-booth-${var.environment}"
   location = "${var.location}"
   tags     = "${var.tags}"
 }
 
 
 resource "azurerm_log_analytics_workspace" "log_workspace" {
-  name                = "aksworkshopproctor"
+  name                = "${var.environment}proctor"
   location            = "eastus"
   resource_group_name = "${azurerm_resource_group.workshop_group.name}"
   sku                 = "Standard"
