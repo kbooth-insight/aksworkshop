@@ -20,7 +20,6 @@ resource "azurerm_resource_group" "workshop_group" {
   tags     = "${var.tags}"
 }
 
-
 resource "azurerm_log_analytics_workspace" "log_workspace" {
   name                = "${var.environment}proctor"
   location            = "eastus"
@@ -112,8 +111,8 @@ resource "null_resource" "setup_k8s" {
 
   provisioner "local-exec" {
     command = "helm install stable/mongodb --name orders-mongo --set mongodbUsername=orders-user,mongodbPassword=orders-password,mongodbDatabase=akschallenge --wait"
-
   }
+
   provisioner "local-exec" {
     command = "helm install ../provided-helm --set appInsightsKey=${azurerm_log_analytics_workspace.log_workspace.primary_shared_key}"
   }
