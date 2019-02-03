@@ -5,5 +5,5 @@ steps:
 - task: PublishBuildArtifacts@1
   displayName: 'publish yaml folder as an artifact'
   inputs:
-    artifactName: 'yaml'
+    artifactName: 'aksworkshop'
     pathToPublish: '.'
