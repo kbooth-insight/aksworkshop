@@ -1,5 +1,11 @@
 # Walkthrough with RBAC
 
+You can skip all this and run the terraform to get a baseline cluster up:
+
+```
+terraform apply -var "client_id=xxxxx" -var "client_secret=xxxx"
+```
+
 Keep your service principal ID/secret handy.
 
 Create analytics workspace and keep the key around to give to everyone as they get their captureorder services up:

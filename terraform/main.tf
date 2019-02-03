@@ -17,7 +17,7 @@ provider "random" {
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_resource_group" "workshop_group" {
-  name     = "rg-booth-aksworkshop"
+  name     = "rg-aksworkshop"
   location = "${var.location}"
   tags     = "${var.tags}"
 }
@@ -104,7 +104,11 @@ resource "null_resource" "setup_k8s" {
   }
 
   provisioner "local-exec" {
-    command = "helm install stable/mongodb --name orders-mongo --set mongodbUsername=orders-user,mongodbPassword=orders-password,mongodbDatabase=akschallenge"
-  }
+    command = "helm install stable/mongodb --name orders-mongo --set mongodbUsername=orders-user,mongodbPassword=orders-password,mongodbDatabase=akschallenge --wait"
 
+  }
+  
+  provisioner "local-exec" {
+    command = "helm install ../provided-helm"
+  }
 }
