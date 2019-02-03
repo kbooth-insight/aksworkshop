@@ -17,9 +17,18 @@ provider "random" {
 data "azurerm_client_config" "current" {}
 
 resource "azurerm_resource_group" "workshop_group" {
-  name     = "rg-aksworkshop"
+  name     = "rg-booth-aksworkshop"
   location = "${var.location}"
   tags     = "${var.tags}"
+}
+
+
+resource "azurerm_log_analytics_workspace" "log_workspace" {
+  name                = "aksworkshopproctor"
+  location            = "eastus"
+  resource_group_name = "${azurerm_resource_group.workshop_group.name}"
+  sku                 = "Standard"
+  retention_in_days   = 30
 }
 
 resource "azurerm_virtual_network" "workshop_vnet" {
@@ -107,8 +116,7 @@ resource "null_resource" "setup_k8s" {
     command = "helm install stable/mongodb --name orders-mongo --set mongodbUsername=orders-user,mongodbPassword=orders-password,mongodbDatabase=akschallenge --wait"
 
   }
-  
   provisioner "local-exec" {
-    command = "helm install ../provided-helm"
+    command = "helm install ../provided-helm --set appInsightsKey=${azurerm_log_analytics_workspace.log_workspace.primary_shared_key}"
   }
 }

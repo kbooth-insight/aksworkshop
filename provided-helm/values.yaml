@@ -5,6 +5,7 @@ teamName: booth
 mongoHost: "orders-mongo-mongodb.default.svc.cluster.local"
 mongoUser: "orders-user"
 mongoPassword: "orders-password"
+appInsightsKey: ""
 
 image:
   repository: azch/captureorder

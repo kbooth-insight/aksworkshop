@@ -32,6 +32,8 @@ spec:
           resources:
 {{ toYaml .Values.resources | indent 12 }}
           env:
+          - name: CHALLENGEAPPINSIGHTS_KEY
+            value: {{ .Values.appInsightsKey }}
           - name: TEAMNAME
             value: {{ .Values.teamName }}
           - name: MONGOHOST
@@ -42,3 +44,4 @@ spec:
             value: {{ .Values.mongoPassword }}
           ports:
           - containerPort: 80
+
