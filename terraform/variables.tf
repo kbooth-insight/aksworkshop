@@ -1,9 +1,9 @@
 variable "client_id" {
-  default = ""
+
 }
 
 variable "client_secret" {
-  default = ""
+
 }
 
 variable "address_space" {
@@ -23,7 +23,7 @@ variable "environment" {
 }
 
 variable "kubernetes_version" {
-  default = "1.11.5"
+  default = "1.12.5"
 }
 
 variable "tags" {
