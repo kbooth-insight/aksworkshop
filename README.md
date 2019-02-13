@@ -104,8 +104,6 @@ kubectl apply -f frontend-service.yaml
 ## 2.5 Monitoring
 Navigate to the AKS instance in the portal and look at the monitoring section on the left nav.
 
-My concern here is that if they only have a service principal, they can't navigate the portal?  Do these spektra accounts include a login to the portal as well?
-
 ## 2.6 Scaling
 
 Create load test container in ACI
@@ -168,7 +166,7 @@ kubectl create secret docker-registry acr-auth --docker-server <acr-login-server
 
 We need to update the spec of the deployment to use the k8s secret we just created.
 
-Go into each *-deployment.yaml and add this underneath `spec:`
+Go into each *-deployment.yaml and add imagePullSecrets underneath `spec:`
 
 i.e.
 
