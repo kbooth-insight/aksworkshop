@@ -65,7 +65,14 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
       subnet_name = "${azurerm_subnet.aci_subnet.name}"
     }
 
+    oms_agent {
+      enabled                    = true
+      log_analytics_workspace_id = "${azurerm_log_analytics_workspace.log_workspace.id}"
+    }
 
+    http_application_routing {
+      enabled = true
+    }
   }
 
   role_based_access_control {
@@ -78,7 +85,6 @@ resource "azurerm_kubernetes_cluster" "aks_cluster" {
     os_type        = "Linux"
     vm_size        = "Standard_D2s_v3"
     vnet_subnet_id = "${azurerm_subnet.aks_subnet.id}"
-
   }
 
   service_principal {

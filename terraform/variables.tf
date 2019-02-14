@@ -1,10 +1,6 @@
-variable "client_id" {
+variable "client_id" {}
 
-}
-
-variable "client_secret" {
-
-}
+variable "client_secret" {}
 
 variable "address_space" {
   default = ["10.0.0.0/8"]
