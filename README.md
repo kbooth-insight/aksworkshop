@@ -23,6 +23,8 @@ If you don't have the spektra SP and are using your own subscription, create an 
 
 `az ad sp create-for-rbac --name booth-for-akschallenge`
 
+# example service principal
+
 ```
 {
   "appId": "xxxxxx-xxx-xxx-xxx-xxxxxx",
